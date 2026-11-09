@@ -149,6 +149,7 @@ Full API docs: [`docs/api.md`](docs/api.md).
 - **Rate limiting** — per-IP sliding window (default: 10 failures / 60 s), configurable via `CALDAV_MCP_RATE_LIMIT_MAX_FAILURES` and `CALDAV_MCP_RATE_LIMIT_WINDOW_SECONDS`.
 - **Audit logging** — all auth attempts and tool operations logged. Set `CALDAV_MCP_LOG_FORMAT=json` for structured output.
 - **Read-only mode** — `CALDAV_MCP_READ_ONLY=true` hides all write tools, leaving only the 8 read-only tools visible.
+- **Event masking** — `CALDAV_MCP_MASK_EVENTS=true` hides event details from AI clients: titles become `masked_event` and location, description, categories, and attendees are removed. Add `CALDAV_MCP_KEEP_TITLES=true` to keep titles and times only. See [`docs/configuration.md`](docs/configuration.md#event-masking).
 
 ## Configuration essentials
 
@@ -162,6 +163,8 @@ Most users only need these:
 | `CALDAV_MCP_API_KEY` | API key for endpoint auth (optional) |
 | `TZ` | IANA timezone for today/week boundaries (default: UTC) |
 | `CALDAV_MCP_READ_ONLY` | `true` to hide write tools |
+| `CALDAV_MCP_MASK_EVENTS` | `true` to hide event details; titles become `masked_event` |
+| `CALDAV_MCP_KEEP_TITLES` | with masking on, keep real titles (times are always kept) |
 
 **Credential modes:** environment variables (env mode), per-request `X-Caldav-*` headers (header mode), or SQLite store (pro mode). No per-field mixing — all three credentials come from the same source. Full reference: [`docs/configuration.md`](docs/configuration.md).
 

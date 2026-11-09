@@ -24,6 +24,7 @@ caldav-mcp is a Model Context Protocol server that provides read/write access to
 | `caldav_mcp/auth.py` | API token validation, CalDAV credential resolution |
 | `caldav_mcp/datetime_utils.py` | Date/time parsing, formatting, timezone helpers |
 | `caldav_mcp/calendar.py` | CalDAV calendar selection, event serialization |
+| `caldav_mcp/masking.py` | Event masking for sensitive calendars (env-gated) |
 | `caldav_mcp/client_cache.py` | Thread-safe LRU cache for `DAVClient` instances |
 | `caldav_mcp/constants.py` | Shared string constants (error messages, defaults) |
 | `caldav_mcp/types.py` | Type aliases (`CalDAVClient`) |

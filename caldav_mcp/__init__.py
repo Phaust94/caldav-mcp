@@ -39,6 +39,7 @@ from caldav_mcp import (  # noqa: E402, F401  (submodule imports; see comment ab
     constants,
     datetime_utils,
     errors,
+    masking,
     rate_limit,
     sanitizers,
     tools,
@@ -124,6 +125,12 @@ from caldav_mcp.event_builder import (  # noqa: E402
     build_event,
     parse_attendee_emails,
 )
+from caldav_mcp.masking import (  # noqa: E402
+    KEEP_TITLES,
+    MASK_EVENTS,
+    MASKED_EVENT_TITLE,
+    mask_event,
+)
 from caldav_mcp.rate_limit import (  # noqa: E402
     RateLimiter,
     auth_rate_limiter,
@@ -177,6 +184,10 @@ __all__ = [
     "MAX_CALENDAR_NAME_LENGTH",
     "MAX_QUERY_LENGTH",
     "CALDAV_VERIFY_SSL",
+    "MASK_EVENTS",
+    "KEEP_TITLES",
+    "MASKED_EVENT_TITLE",
+    "mask_event",
     "RATE_LIMIT_MAX_FAILURES",
     "RATE_LIMIT_WINDOW_SECONDS",
     "TLS_CERT_PATH",

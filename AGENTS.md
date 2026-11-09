@@ -42,6 +42,7 @@ caldav-mcp/
 │   ├── datetime_utils.py        # Date/time parsing, timezone helpers
 │   ├── errors.py                # Typed exceptions, ToolResult dataclass
 │   ├── event_builder.py         # Pure iCalendar VEVENT construction
+│   ├── masking.py               # Event masking for sensitive calendars
 │   ├── sanitizers.py            # Input sanitization, field length limits
 │   ├── rate_limit.py            # Sliding-window rate limiter
 │   ├── audit.py                 # Structured JSON audit logging
@@ -118,6 +119,8 @@ All config via environment variables, validated at startup with Pydantic:
 | `CALDAV_MCP_PATH` | Streamable HTTP endpoint path (default `/mcp`) |
 | `TZ` | IANA timezone for today/week boundaries (default UTC) |
 | `CALDAV_MCP_READ_ONLY` | Hide write tools; only query tools are exposed when `true` (default `false`) |
+| `CALDAV_MCP_MASK_EVENTS` | Mask event details; titles become `masked_event` (default `false`) |
+| `CALDAV_MCP_KEEP_TITLES` | With masking enabled, keep real event titles and times (default `false`) |
 | `CALDAV_MCP_RATE_LIMIT_MAX_FAILURES` | Max failed auth attempts per IP before rate limiting (default `10`) |
 | `CALDAV_MCP_RATE_LIMIT_WINDOW_SECONDS` | Sliding window for rate limiting in seconds (default `60`) |
 | `DB_CONFIG_ENABLED` | Enable pro mode: load config and users from SQLite store; requires `CALDAV_MCP_DB_PATH` and `CALDAV_MCP_CONFIG_SECRET` |

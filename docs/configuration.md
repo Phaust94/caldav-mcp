@@ -13,6 +13,8 @@ Pydantic.
 | `CALDAV_MCP_PATH` | `/mcp` | Streamable HTTP endpoint path |
 | `CALDAV_MCP_API_KEY` | `""` (disabled) | Shared secret for MCP endpoint auth |
 | `CALDAV_MCP_READ_ONLY` | `false` | Hide write tools; only query tools are exposed when `true` |
+| `CALDAV_MCP_MASK_EVENTS` | `false` | Mask event details before they reach MCP clients (see below) |
+| `CALDAV_MCP_KEEP_TITLES` | `false` | With masking enabled, keep real event titles instead of `masked_event` |
 | `CALDAV_MCP_CONFIG_SECRET` | `""` | Master secret for encrypting CalDAV passwords at rest in the SQLite store. Required by the CLI (encrypt) and server (decrypt). Changing it invalidates stored ciphertexts. |
 | `CALDAV_MCP_DB_PATH` | `""` | Path to the SQLite configuration store. Required by the CLI and by the server in pro mode; `--db` CLI flag takes precedence. |
 | `DB_CONFIG_ENABLED` | `false` | Enable pro mode: load config and users from the SQLite store; requires `CALDAV_MCP_DB_PATH` and `CALDAV_MCP_CONFIG_SECRET`; `CALDAV_MCP_API_KEY` is ignored. |
@@ -47,6 +49,30 @@ Pydantic.
 | Variable | Default | Description |
 | --- | --- | --- |
 | `CALDAV_MCP_LOG_FORMAT` | `text` | Audit log format: `text` or `json` |
+
+### Event masking
+
+`CALDAV_MCP_MASK_EVENTS=true` strips event details before they are returned to
+an MCP client: the summary is replaced with `masked_event`, and location,
+description, categories, and attendees are emptied. Start/end times and the
+event UID are preserved so tools remain addressable by UID.
+
+Set `CALDAV_MCP_KEEP_TITLES=true` as well to keep real event titles (and times)
+while still hiding every other field. It has no effect unless
+`CALDAV_MCP_MASK_EVENTS` is also enabled.
+
+Masking is applied at the serialization boundary, so it covers every read tool
+— `caldav_get_events`, `caldav_get_today_events`, `caldav_get_week_events`,
+`caldav_get_event_by_uid`, `caldav_search_events`, `caldav_get_freebusy`, and
+`caldav_list_attendees` — in both simple and pro (fan-out) mode. Search runs
+against the masked data, so it cannot be used to recover hidden details.
+
+The unprefixed aliases `MASK_EVENTS` and `KEEP_TITLES` are also accepted; the
+`CALDAV_MCP_*` names win when both are set.
+
+> Masking hides data from reads only. Write tools still accept a UID and can
+> modify the real event. Pair masking with `CALDAV_MCP_READ_ONLY=true` if the
+> model must not be able to change events it cannot see.
 
 ## Deployment patterns
 

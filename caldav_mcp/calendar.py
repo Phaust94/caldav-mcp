@@ -14,6 +14,7 @@ from typing import Any
 from icalendar.prop import vRecur
 
 from caldav_mcp.errors import NotFoundError
+from caldav_mcp.masking import mask_event
 from caldav_mcp.types import CalDAVClient
 
 
@@ -82,16 +83,18 @@ def _comp(event: Any) -> Any | None:
 def _event_to_dict(event: Any) -> dict[str, str]:
     comp = _comp(event)
     if comp is None:
-        return {
-            "uid": getattr(event, "id", ""),
-            "summary": "",
-            "dtstart": "",
-            "dtend": "",
-            "location": "",
-            "description": "",
-            "categories": "",
-            "attendees": "",
-        }
+        return mask_event(
+            {
+                "uid": getattr(event, "id", ""),
+                "summary": "",
+                "dtstart": "",
+                "dtend": "",
+                "location": "",
+                "description": "",
+                "categories": "",
+                "attendees": "",
+            }
+        )
 
     # Attendees require special handling: icalendar may return a single
     # vCalAddress, a list, or None.  We normalize to a "; "-separated string.
@@ -102,16 +105,18 @@ def _event_to_dict(event: Any) -> dict[str, str]:
     elif attendee_val is not None:
         attendee_str = _attendee_str(attendee_val)
 
-    return {
-        "uid": _text(comp, "uid") or getattr(event, "id", ""),
-        "summary": _text(comp, "summary"),
-        "dtstart": _text(comp, "dtstart"),
-        "dtend": _text(comp, "dtend"),
-        "location": _text(comp, "location"),
-        "description": _text(comp, "description"),
-        "categories": _text(comp, "categories"),
-        "attendees": attendee_str,
-    }
+    return mask_event(
+        {
+            "uid": _text(comp, "uid") or getattr(event, "id", ""),
+            "summary": _text(comp, "summary"),
+            "dtstart": _text(comp, "dtstart"),
+            "dtend": _text(comp, "dtend"),
+            "location": _text(comp, "location"),
+            "description": _text(comp, "description"),
+            "categories": _text(comp, "categories"),
+            "attendees": attendee_str,
+        }
+    )
 
 
 def _attendee_str(attendee: Any) -> str:

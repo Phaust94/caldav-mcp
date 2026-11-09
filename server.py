@@ -248,8 +248,21 @@ def main() -> None:
 
     load_server_config()  # raises on invalid port/tz/path
 
+    from caldav_mcp.config import (  # noqa: E402
+        DB_CONFIG_ENABLED,
+        KEEP_TITLES,
+        MASK_EVENTS,
+    )
+
+    if MASK_EVENTS:
+        log.info(
+            "Event masking enabled — titles are %s",
+            "kept" if KEEP_TITLES else "replaced with 'masked_event'",
+        )
+    elif KEEP_TITLES:
+        log.warning("CALDAV_MCP_KEEP_TITLES is set but CALDAV_MCP_MASK_EVENTS is not — ignoring")
+
     # --- Pro-mode branch (DB_CONFIG_ENABLED) ---
-    from caldav_mcp.config import DB_CONFIG_ENABLED  # noqa: E402
 
     if DB_CONFIG_ENABLED:
         from caldav_mcp.auth import configure_pro_users

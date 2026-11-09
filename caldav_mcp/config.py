@@ -72,6 +72,25 @@ READ_ONLY = os.environ.get("CALDAV_MCP_READ_ONLY", "false").lower() in (
     "yes",
 )
 
+
+def _env_flag(primary: str, alias: str = "") -> bool:
+    """Read a boolean env var, optionally falling back to a shorter alias.
+
+    The canonical ``CALDAV_MCP_*`` name always wins when both are set.
+    Accepted truthy values match the other flags: ``true``, ``1``, ``yes``
+    (case-insensitive).
+    """
+    raw = os.environ.get(primary)
+    if raw is None and alias:
+        raw = os.environ.get(alias)
+    return (raw or "").lower() in ("true", "1", "yes")
+
+
+# Event masking: strip event details before they reach MCP clients.
+# KEEP_TITLES only takes effect when MASK_EVENTS is enabled.
+MASK_EVENTS = _env_flag("CALDAV_MCP_MASK_EVENTS", "MASK_EVENTS")
+KEEP_TITLES = _env_flag("CALDAV_MCP_KEEP_TITLES", "KEEP_TITLES")
+
 # Pro mode: load config and users from the SQLite store at startup.
 DB_CONFIG_ENABLED = os.environ.get("DB_CONFIG_ENABLED", "false").lower() in (
     "true",
