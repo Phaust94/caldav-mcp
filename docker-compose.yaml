@@ -24,6 +24,10 @@ services:
       CALDAV_MCP_RATE_LIMIT_WINDOW_SECONDS: "${CALDAV_MCP_RATE_LIMIT_WINDOW_SECONDS:-60}"
       # Audit log format (text or json)
       CALDAV_MCP_LOG_FORMAT: "${CALDAV_MCP_LOG_FORMAT:-text}"
+      # Event masking for sensitive calendars (applies to read tools).
+      # Titles become "masked_event"; set KEEP_TITLES to keep titles and times.
+      CALDAV_MCP_MASK_EVENTS: "${CALDAV_MCP_MASK_EVENTS:-false}"
+      CALDAV_MCP_KEEP_TITLES: "${CALDAV_MCP_KEEP_TITLES:-false}"
       TZ: Europe/Vienna
     healthcheck:
       test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(3); s.connect(('127.0.0.1',8080)); s.close()"]
