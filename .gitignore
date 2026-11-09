@@ -13,3 +13,4 @@ tests/integration/pro-store/
 tests/integration/radicale-data/
 tests/integration/radicale2-data/*
 !tests/integration/radicale2-data/.gitkeep
+.idea
