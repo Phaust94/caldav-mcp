@@ -249,10 +249,18 @@ def main() -> None:
     load_server_config()  # raises on invalid port/tz/path
 
     from caldav_mcp.config import (  # noqa: E402
+        CALENDAR_WHITELIST,
         DB_CONFIG_ENABLED,
         KEEP_TITLES,
         MASK_EVENTS,
     )
+
+    if CALENDAR_WHITELIST:
+        log.info(
+            "Calendar whitelist active — %d calendar(s) allowed: %s",
+            len(CALENDAR_WHITELIST),
+            ", ".join(sorted(CALENDAR_WHITELIST)),
+        )
 
     if MASK_EVENTS:
         log.info(

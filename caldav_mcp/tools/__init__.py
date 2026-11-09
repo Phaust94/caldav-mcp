@@ -110,7 +110,7 @@ def _empty(message: str = "") -> ToolResult:
 
 # Parameters always injected by the decorator — excluded from the public signature.
 # ``_query_fn`` is injected by ``with_caldav_fanout`` for pro-mode fan-out.
-_ALWAYS_INJECTED = frozenset({"client", "pro_user", "write", "_query_fn"})
+_ALWAYS_INJECTED = frozenset({"client", "pro_user", "write", "_query_fn", "_allowed_calendars"})
 
 
 def _filter_public_params(
@@ -558,6 +558,13 @@ def _execute_fanout(
     """
     from caldav_mcp.calendar import _get_calendar as _get_cal
 
+    # Snapshot the configured calendar names per remote BEFORE the
+    # ``once_per_remote`` truncation below, so a listing tool can restrict its
+    # output to the calendars declared in the pro-mode config.
+    allowed_by_remote: dict[tuple[str, str], tuple[str, ...]] = {
+        (s.config_name, s.remote.name): s.calendar_names for s in user_scopes
+    }
+
     if once_per_remote:
         # Day/week/list tools express one query per remote.  Keep a single
         # (representative) calendar per scope; empty scopes produce a single
@@ -575,6 +582,7 @@ def _execute_fanout(
     # ``cal`` parameter while still declaring ``needs_calendar=False`` so the
     # simple-mode path resolves it internally).
     accepts_cal = "cal" in inspect.signature(fn).parameters
+    accepts_allowed = "_allowed_calendars" in inspect.signature(fn).parameters
 
     def query_fn(scope: RemoteScope, cal_name: str | None):
         client = _resolve_pro_client_for_scope(scope.remote, credential_headers)
@@ -593,6 +601,10 @@ def _execute_fanout(
         # Remove _query_fn — it is a decorator-injected artefact, not a
         # real handler parameter.
         handler_kwargs.pop("_query_fn", None)
+        if accepts_allowed:
+            handler_kwargs["_allowed_calendars"] = allowed_by_remote.get(
+                (scope.config_name, scope.remote.name), ()
+            )
 
         if accepts_cal:
             result = fn(client=client, cal=cal, **handler_kwargs)

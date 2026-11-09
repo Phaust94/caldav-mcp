@@ -11,7 +11,9 @@ SQLite config store at startup, enabling multi-user, multi-account deployments.
 - **Fan-out reads**: Parameterless read tools (e.g. `caldav_list_calendars`,
   `caldav_get_events`) fan out sequentially across all accessible remotes
   and aggregate results per-remote. One remote's failure never masks others'
-  results.
+  results. `caldav_list_calendars` only reports the calendars declared for each
+  remote in the store (optionally further narrowed by
+  `CALDAV_MCP_CALENDAR_WHITELIST`).
 - **Partial-failure reporting**: Each scope produces an entry with a status
   (`ok`, `empty`, `auth`, `error`, `not_found`). The top-level result is `OK`
   when at least one scope succeeds, `ERROR` when all fail, and `EMPTY` when

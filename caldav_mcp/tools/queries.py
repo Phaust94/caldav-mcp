@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from caldav_mcp import mcp
 from caldav_mcp.calendar import _event_to_dict, _get_calendar
+from caldav_mcp.config import CALENDAR_WHITELIST
 from caldav_mcp.datetime_utils import _now, _parse_dt, _start_of_day
 from caldav_mcp.errors import NotFoundError, Status, ToolResult
 from caldav_mcp.sanitizers import MAX_QUERY_LENGTH, sanitize_text
@@ -23,10 +24,26 @@ _RO_ANNOTATIONS = {
 # ---------------------------------------------------------------------------
 
 
-def _list_calendars_core(client):
-    """Return the list of calendars for *client* as a list of dicts."""
+def _list_calendars_core(client, allowed: tuple[str, ...] | None = None):
+    """Return the list of calendars for *client* as a list of dicts.
+
+    Two filters are applied when configured:
+
+    * ``CALDAV_MCP_CALENDAR_WHITELIST`` — environment allowlist, always active
+      when non-empty.
+    * *allowed* — per-remote configured calendars in pro mode (``None`` means
+      "no per-remote restriction", e.g. simple/header mode).
+    """
     calendars = client.principal().calendars()
-    return [{"name": c.name, "url": str(c.url)} for c in calendars]
+    allowed_set = set(allowed) if allowed is not None else None
+    result = []
+    for c in calendars:
+        if CALENDAR_WHITELIST and c.name not in CALENDAR_WHITELIST:
+            continue
+        if allowed_set is not None and c.name not in allowed_set:
+            continue
+        result.append({"name": c.name, "url": str(c.url)})
+    return result
 
 
 def _get_events_core(cal, start: str = "", end: str = "", calendar_name: str = ""):
@@ -75,9 +92,9 @@ def _get_freebusy_core(cal, start: str = "", end: str = ""):
 
 @mcp.tool(annotations=_RO_ANNOTATIONS)
 @with_caldav_fanout(needs_calendar=False, once_per_remote=True)
-def caldav_list_calendars(client):
+def caldav_list_calendars(client, _allowed_calendars: tuple[str, ...] | None = None):
     """List all calendars available for the configured account."""
-    calendars = _list_calendars_core(client)
+    calendars = _list_calendars_core(client, _allowed_calendars)
     if not calendars:
         return _empty("No calendars found")
     return _ok(

@@ -15,6 +15,7 @@ Pydantic.
 | `CALDAV_MCP_READ_ONLY` | `false` | Hide write tools; only query tools are exposed when `true` |
 | `CALDAV_MCP_MASK_EVENTS` | `false` | Mask event details before they reach MCP clients (see below) |
 | `CALDAV_MCP_KEEP_TITLES` | `false` | With masking enabled, keep real event titles instead of `masked_event` |
+| `CALDAV_MCP_CALENDAR_WHITELIST` | `""` (all) | Comma-separated calendar names; only these are listed and accessible |
 | `CALDAV_MCP_CONFIG_SECRET` | `""` | Master secret for encrypting CalDAV passwords at rest in the SQLite store. Required by the CLI (encrypt) and server (decrypt). Changing it invalidates stored ciphertexts. |
 | `CALDAV_MCP_DB_PATH` | `""` | Path to the SQLite configuration store. Required by the CLI and by the server in pro mode; `--db` CLI flag takes precedence. |
 | `DB_CONFIG_ENABLED` | `false` | Enable pro mode: load config and users from the SQLite store; requires `CALDAV_MCP_DB_PATH` and `CALDAV_MCP_CONFIG_SECRET`; `CALDAV_MCP_API_KEY` is ignored. |
@@ -73,6 +74,29 @@ The unprefixed aliases `MASK_EVENTS` and `KEEP_TITLES` are also accepted; the
 > Masking hides data from reads only. Write tools still accept a UID and can
 > modify the real event. Pair masking with `CALDAV_MCP_READ_ONLY=true` if the
 > model must not be able to change events it cannot see.
+
+### Calendar whitelist
+
+`CALDAV_MCP_CALENDAR_WHITELIST` accepts a comma-separated list of calendar
+names (whitespace trimmed). When non-empty, it is enforced everywhere:
+
+- `caldav_list_calendars` returns only whitelisted calendars.
+- Any tool that selects a calendar by name — reads, writes, attendees, moves —
+  rejects non-whitelisted names with `not_found`, exactly as if the calendar
+  did not exist. The "available" hint only lists whitelisted calendars.
+- The default calendar (when no name is given) is the first *whitelisted*
+  calendar.
+
+In pro mode the whitelist is intersected with the calendars declared in the
+SQLite config: `caldav_list_calendars` shows only the calendars configured for
+each remote, and access still respects the env whitelist.
+
+Leave the variable empty (the default) to expose every calendar on the account.
+The unprefixed alias `CALENDAR_WHITELIST` is also accepted; the
+`CALDAV_MCP_*` name wins when both are set.
+
+> Calendar names are matched exactly (case-sensitive), so use the same names
+> that `caldav_list_calendars` reports before enabling the whitelist.
 
 ## Deployment patterns
 

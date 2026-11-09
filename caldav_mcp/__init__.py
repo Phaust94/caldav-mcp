@@ -74,6 +74,7 @@ from caldav_mcp.client_cache import (  # noqa: E402
 from caldav_mcp.config import (  # noqa: E402
     API_KEY,
     CALDAV_VERIFY_SSL,
+    CALENDAR_WHITELIST,
     DEFAULT_PATH,
     DEFAULT_PORT,
     HDR_API_KEY,
@@ -184,6 +185,7 @@ __all__ = [
     "MAX_CALENDAR_NAME_LENGTH",
     "MAX_QUERY_LENGTH",
     "CALDAV_VERIFY_SSL",
+    "CALENDAR_WHITELIST",
     "MASK_EVENTS",
     "KEEP_TITLES",
     "MASKED_EVENT_TITLE",

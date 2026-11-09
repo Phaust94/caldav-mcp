@@ -91,6 +91,26 @@ def _env_flag(primary: str, alias: str = "") -> bool:
 MASK_EVENTS = _env_flag("CALDAV_MCP_MASK_EVENTS", "MASK_EVENTS")
 KEEP_TITLES = _env_flag("CALDAV_MCP_KEEP_TITLES", "KEEP_TITLES")
 
+
+def _parse_calendar_whitelist(raw: str) -> frozenset[str]:
+    """Parse a comma-separated calendar whitelist into a set of names.
+
+    An empty/missing value disables the whitelist.  Entries are trimmed and
+    empty entries are dropped, so ``" Work , Travel "`` yields
+    ``{"Work", "Travel"}``.
+    """
+    return frozenset(name.strip() for name in raw.split(",") if name.strip())
+
+
+# Calendar whitelist: when non-empty, only these calendar names are visible
+# and accessible.  The shorter ``CALENDAR_WHITELIST`` alias is also accepted.
+CALENDAR_WHITELIST = _parse_calendar_whitelist(
+    os.environ.get(
+        "CALDAV_MCP_CALENDAR_WHITELIST",
+        os.environ.get("CALENDAR_WHITELIST", ""),
+    )
+)
+
 # Pro mode: load config and users from the SQLite store at startup.
 DB_CONFIG_ENABLED = os.environ.get("DB_CONFIG_ENABLED", "false").lower() in (
     "true",

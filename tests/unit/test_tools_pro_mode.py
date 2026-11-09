@@ -1055,10 +1055,17 @@ class TestFanoutDataIntegrity:
         cal_personal = _FanoutCalendar(
             "personal", [FakeEvent(make_event(uid="ev-pers", summary="P"))]
         )
-        return _FanoutClient([cal_team, cal_personal])
+        cal_shared = _FanoutCalendar(
+            "shared", [FakeEvent(make_event(uid="ev-shared", summary="S"))]
+        )
+        return _FanoutClient([cal_team, cal_personal, cal_shared])
 
     def test_list_calendars_one_entry_per_remote(self):
-        """caldav_list_calendars yields one entry per remote, not per calendar."""
+        """caldav_list_calendars yields one entry per remote, not per calendar.
+
+        In pro mode the payload is narrowed to the calendars declared for that
+        remote in the config (``nc``: team+personal, ``nc2``: shared).
+        """
         client = self._two_cal_client()
         with (
             mock.patch("caldav_mcp.tools._authenticate", return_value=_auth_return(_USER_BOTH)),
@@ -1071,12 +1078,17 @@ class TestFanoutDataIntegrity:
         # once per calendar.
         keys = [(e["config_name"], e["remote_name"]) for e in result.data]
         assert len(keys) == len(set(keys))
-        # Each remote-level payload lists every calendar exactly once.
+        # Each remote-level payload lists only its configured calendars.
+        expected = {
+            ("work", "nc"): ["personal", "team"],
+            ("work", "nc2"): ["shared"],
+            ("personal", "passthrough"): [],
+        }
         for entry in result.data:
             if entry.get("error"):
                 continue
-            names = sorted(c["name"] for c in entry["data"])
-            assert names == ["personal", "team"]
+            names = sorted(c["name"] for c in entry.get("data") or [])
+            assert names == expected[(entry["config_name"], entry["remote_name"])]
 
     def test_today_events_once_per_remote_carries_own_events(self):
         """caldav_get_today_events fans out once per remote with real cal data."""

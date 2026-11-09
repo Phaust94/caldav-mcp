@@ -13,6 +13,7 @@ from typing import Any
 
 from icalendar.prop import vRecur
 
+from caldav_mcp.config import CALENDAR_WHITELIST
 from caldav_mcp.errors import NotFoundError
 from caldav_mcp.masking import mask_event
 from caldav_mcp.types import CalDAVClient
@@ -26,6 +27,12 @@ def _get_calendar(client: CalDAVClient, calendar_name: str | None = None) -> Any
     :class:`NotFoundError` with a list of available calendar names when
     the requested name is not found.
 
+    When ``CALDAV_MCP_CALENDAR_WHITELIST`` is configured, calendars outside
+    the whitelist are treated as if they did not exist: they are excluded from
+    the default selection, cannot be selected by name, and are not listed in
+    the "available" hint.  A denied name is therefore indistinguishable from a
+    missing one.
+
     Parameters
     ----------
     client : caldav.DAVClient
@@ -34,6 +41,8 @@ def _get_calendar(client: CalDAVClient, calendar_name: str | None = None) -> Any
         Optional calendar name to select.  ``None`` selects the first.
     """
     calendars = client.principal().calendars()
+    if CALENDAR_WHITELIST:
+        calendars = [c for c in calendars if c.name in CALENDAR_WHITELIST]
     if not calendars:
         raise NotFoundError("No calendars found for this principal")
     if calendar_name:

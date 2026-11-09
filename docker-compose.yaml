@@ -26,6 +26,8 @@ services:
       # Titles become "masked_event"; set KEEP_TITLES to keep titles and times.
       CALDAV_MCP_MASK_EVENTS: "${CALDAV_MCP_MASK_EVENTS:-false}"
       CALDAV_MCP_KEEP_TITLES: "${CALDAV_MCP_KEEP_TITLES:-false}"
+      # Comma-separated calendar allowlist; empty exposes every calendar.
+      CALDAV_MCP_CALENDAR_WHITELIST: "${CALDAV_MCP_CALENDAR_WHITELIST:-}"
       TZ: Europe/Vienna
     healthcheck:
       test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(3); s.connect(('127.0.0.1',8080)); s.close()"]
